@@ -1,5 +1,6 @@
 package com.appbanking.javaappbanking.service.impl;
 
+import com.appbanking.javaappbanking.dto.AccountInfo;
 import com.appbanking.javaappbanking.dto.BankResponse;
 import com.appbanking.javaappbanking.dto.UserRequest;
 import com.appbanking.javaappbanking.entity.User;
@@ -21,8 +22,11 @@ public class UserServiceImpl implements UserService{
          * check if user already have an account
          * **/
         if (userRepository.existsByEmail(userRequest.getEmail())){
-
-
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.ACCOUNT_EXISTS_CODE)
+                    .responseMessage(AccountUtils.ACCOUNT_EXISTS_MESSAGE)
+                    .accountInfo(null)
+                    .build();
         }
         User newUser = User.builder()
                 .firstName(userRequest.getFirstName())
@@ -38,6 +42,18 @@ public class UserServiceImpl implements UserService{
                 .alternativePhoneNumber(userRequest.getAlternativePhoneNumber())
                 .status("ACTIVE")
 
+                .build();
+
+
+        User savedUser = userRepository.save(newUser);
+        return BankResponse.builder()
+                .responseCode(AccountUtils.ACCOUNT_CREATION_SUCCESS)
+                .responseMessage(AccountUtils.ACCOUNT_CREATION_MESSAGE)
+                .accountInfo(AccountInfo.builder()
+                        .accountBalance(savedUser.getAccountBalance())
+                        .accountNumber(savedUser.getAccountNumber())
+                        .accountName(savedUser.getFirstName() + savedUser.getLastName() + "" + savedUser.getOtherName())
+                        .build())
                 .build();
 
     }
